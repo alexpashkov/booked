@@ -1,19 +1,12 @@
 import { ApolloServer } from "apollo-server-express";
 import * as Express from "express";
-import { buildSchema, Query, Resolver } from "type-graphql";
+import { buildSchema } from "type-graphql";
 import "reflect-metadata";
-
-@Resolver()
-class HelloResolver {
-  @Query(() => String)
-  async hello() {
-    return "Hello World";
-  }
-}
+import BookingResolver from "./BookingResolver";
 
 async function main() {
   const schema = await buildSchema({
-    resolvers: [HelloResolver],
+    resolvers: [BookingResolver],
   });
   const server = new ApolloServer({ schema });
   const app = Express();
@@ -21,4 +14,4 @@ async function main() {
   app.listen(4000, () => console.log("Server started on localhost:4000"));
 }
 
-main();
+main().catch(console.error);
