@@ -32,19 +32,23 @@ export default class Schedule {
    * @param duration in milliseconds
    */
   public book(start: Date, duration: number = this.defaultDuration) {
-    if (this.isBooked(start)) {
+    const booking = { date: start, duration };
+    if (!this.canBook(booking)) {
       throw new Error("already booked");
     }
-    this.bookings.push({ date: start, duration });
+    this.bookings.push(booking);
     this.sortBookings();
   }
 
-  private isBooked(date: Date): boolean {
-    const closest = this.findClosestPrecedingBooking(date);
+  private canBook(booking: Booking): boolean {
+    const { preceding, following } = this.findClosestBookings(booking.date);
     return (
-      !!closest &&
-      (Schedule.datesAreEqual(closest.date, date) ||
-        Schedule.bookingCoversDate(closest, date))
+      (!preceding ||
+        (!Schedule.datesAreEqual(preceding.date, booking.date) &&
+          !Schedule.bookingCoversDate(preceding, booking.date))) &&
+      (!following ||
+        (!Schedule.datesAreEqual(following.date, booking.date) &&
+          !Schedule.bookingCoversDate(booking, following.date)))
     );
   }
 
@@ -56,10 +60,13 @@ export default class Schedule {
    * Note: it relies on the fact that {@link this.bookings} are sorted in ascending order at all times
    * @param start
    */
-  private findClosestPrecedingBooking(start: Date): Booking | undefined {
+  private findClosestBookings(
+    start: Date
+  ): { preceding?: Booking; following?: Booking } {
     for (let i = this.bookings.length - 1; i >= 0; i--) {
-      if (this.bookings[i].date <= start) return this.bookings[i];
+      if (this.bookings[i].date <= start)
+        return { preceding: this.bookings[i], following: this.bookings[i + 1] };
     }
-    return undefined;
+    return {};
   }
 }
