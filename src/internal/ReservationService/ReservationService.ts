@@ -12,8 +12,13 @@ interface Options {
 class ReservationService {
   constructor(private readonly options: Options) {}
 
+  private blankResourceData: Data = {
+    bookings: [],
+    minDuration: this.options.minDuration,
+  };
+
   public async createResource(): Promise<string> {
-    const res = await this.mongoCollection.insertOne(this.newResourceData);
+    const res = await this.mongoCollection.insertOne(this.blankResourceData);
     return res.insertedId.toHexString();
   }
 
@@ -38,12 +43,6 @@ class ReservationService {
     return this.options.mongoClient
       .db(this.options.dbName)
       .collection(this.options.collectionName);
-  }
-  private get newResourceData(): Data {
-    return {
-      bookings: [],
-      minDuration: this.options.minDuration,
-    };
   }
 }
 
