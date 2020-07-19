@@ -1,14 +1,15 @@
-interface Booking {
+interface Booking<T = undefined> {
   date: Date;
   duration: number;
+  meta?: T;
 }
 
-export interface Data {
-  bookings: Booking[];
+export interface Data<T> {
+  bookings: Booking<T>[];
   minDuration: number;
 }
 
-export default class Resource {
+export default class Resource<T> {
   private static compareDates(a: Date, b: Date): number {
     return a > b ? -1 : 1;
   }
@@ -17,11 +18,14 @@ export default class Resource {
     return !Resource.compareDates(a, b);
   }
 
-  private static bookingCoversDate(booking: Booking, date: Date): boolean {
+  private static bookingCoversDate<T>(
+    booking: Booking<T>,
+    date: Date
+  ): boolean {
     return booking.date.getTime() + booking.duration > date.getTime();
   }
 
-  public constructor(public readonly data: Data) {}
+  public constructor(public readonly data: Data<T>) {}
 
   /**
    *
@@ -59,7 +63,7 @@ export default class Resource {
    */
   private findClosestBookings(
     start: Date
-  ): { preceding?: Booking; following?: Booking } {
+  ): { preceding?: Booking<T>; following?: Booking<T> } {
     for (let i = this.data.bookings.length - 1; i >= 0; i--) {
       if (this.data.bookings[i].date <= start)
         return {

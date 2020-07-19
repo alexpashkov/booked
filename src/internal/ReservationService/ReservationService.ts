@@ -9,10 +9,10 @@ interface Options {
   readonly minDuration: number;
 }
 
-class ReservationService {
+class ReservationService<T = undefined> {
   constructor(private readonly options: Options) {}
 
-  private blankResourceData: Data = {
+  private blankResourceData: Data<T> = {
     bookings: [],
     minDuration: this.options.minDuration,
   };
@@ -23,23 +23,23 @@ class ReservationService {
   }
 
   public async book(
-    id: string | mongodb.ObjectID,
+    id: string,
     date: Date,
     duration: number = this.options.minDuration
   ) {
-    id = new mongodb.ObjectID(id);
-    const data = await this.mongoCollection.findOne({ _id: id });
+    const oid = new mongodb.ObjectID(id);
+    const data = await this.mongoCollection.findOne({ _id: oid });
     if (!data) throw new Error("no such resource");
     const resource = new Resource(data);
     resource.book(date, duration);
     await this.mongoCollection.updateOne(
-      { _id: id },
+      { _id: oid },
       { $set: resource },
       { upsert: true }
     );
   }
 
-  private get mongoCollection(): mongodb.Collection<Data> {
+  private get mongoCollection(): mongodb.Collection<Data<T>> {
     return this.options.mongoClient
       .db(this.options.dbName)
       .collection(this.options.collectionName);

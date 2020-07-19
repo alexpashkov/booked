@@ -22,7 +22,6 @@ describe("ReservationService", () => {
     });
   });
   afterAll(async () => await mongoClient.close());
-
   it("allows making a reservation", async () => {
     const id = await service.createResource();
     await service.book(id, new Date("15-06-2020 18-30"), HOUR);

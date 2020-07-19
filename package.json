@@ -6,7 +6,8 @@
   "scripts": {
     "start": "ts-node-dev src/index.ts",
     "test": "jest",
-    "test-watch": "jest --watchAll"
+    "test-watch": "jest --watchAll",
+    "rs": "run-rs"
   },
   "author": "Alex Pashkov",
   "dependencies": {
@@ -29,6 +30,7 @@
     "@types/node": "^14.0.19",
     "nodemon": "^2.0.4",
     "prettier": "^2.0.5",
+    "run-rs": "^0.6.2",
     "ts-jest": "^26.1.3",
     "ts-node": "^8.10.2",
     "ts-node-dev": "^1.0.0-pre.50",
