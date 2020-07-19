@@ -4,7 +4,7 @@ interface Booking<T = undefined> {
   meta?: T;
 }
 
-export interface Data<T> {
+export interface BookingData<T> {
   bookings: Booking<T>[];
   minDuration: number;
 }
@@ -25,15 +25,16 @@ export default class Resource<T> {
     return booking.date.getTime() + booking.duration > date.getTime();
   }
 
-  public constructor(public readonly data: Data<T>) {}
+  public constructor(public readonly data: BookingData<T>) {}
 
   /**
    *
    * @param date
    * @param duration in milliseconds
+   * @param meta
    */
-  public book(date: Date, duration: number = this.data.minDuration) {
-    const booking = { date: date, duration };
+  public book(date: Date, duration: number, meta?: T) {
+    const booking = { date, duration, meta };
     if (!this.canBook(booking)) {
       throw new Error("already booked");
     }
@@ -41,7 +42,11 @@ export default class Resource<T> {
     this.sortBookings();
   }
 
-  private canBook(booking: Booking): boolean {
+  public findBooking(date: Date): Booking<T> | undefined {
+    return this.data.bookings.find((b) => b.date.getTime() === date.getTime());
+  }
+
+  private canBook(booking: Booking<T>): boolean {
     const { preceding, following } = this.findClosestBookings(booking.date);
     return (
       (!preceding ||

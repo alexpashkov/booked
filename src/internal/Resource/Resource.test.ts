@@ -10,14 +10,14 @@ describe("Resource", function () {
     const s = new Resource({ bookings: [], minDuration: HOUR });
     expect(() => s.book(new Date("2020-06-25 16:30"), HOUR)).not.toThrow();
     expect(() => s.book(new Date("2020-06-25 16:30"), HOUR)).toThrow();
-    expect(() => s.book(new Date("2020-06-25 17:00"))).toThrow();
+    expect(() => s.book(new Date("2020-06-25 17:00"), HOUR)).toThrow();
   });
   it("prevents reserving time that's covered by the duration of another booking 2", () => {
     const s = new Resource({ bookings: [], minDuration: HOUR });
     expect(() => s.book(new Date("2020-06-25 15:30"), HOUR)).not.toThrow();
     expect(() => s.book(new Date("2020-06-25 15:30"), HOUR)).toThrow();
     expect(() => s.book(new Date("2020-06-25 16:30"), HOUR)).not.toThrow();
-    expect(() => s.book(new Date("2020-06-25 17:00"))).toThrow();
+    expect(() => s.book(new Date("2020-06-25 17:00"), HOUR)).toThrow();
   });
   it("prevents reserving if duration covers another booking in front", () => {
     const s = new Resource({ bookings: [], minDuration: HOUR });

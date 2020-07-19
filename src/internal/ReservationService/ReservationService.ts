@@ -1,5 +1,5 @@
 import * as mongodb from "mongodb";
-import Resource, { Data } from "../Resource/Resource";
+import Resource, { BookingData } from "../Resource/Resource";
 
 interface Options {
   readonly mongoClient: mongodb.MongoClient;
@@ -10,34 +10,48 @@ interface Options {
 }
 
 class ReservationService<T = undefined> {
+  /**
+   * It's here for testing purposes only
+   */
+  public beforeBookingUpdate?: () => Promise<void>;
+
   constructor(private readonly options: Options) {}
 
-  private blankResourceData: Data<T> = {
-    bookings: [],
-    minDuration: this.options.minDuration,
-  };
+  private get blankResourceData(): BookingData<T> {
+    return {
+      bookings: [],
+      minDuration: this.options.minDuration,
+    };
+  }
 
   public async createResource(): Promise<string> {
     const res = await this.mongoCollection.insertOne(this.blankResourceData);
     return res.insertedId.toHexString();
   }
 
-  public async book(
+  public async getResourceById(
     id: string,
-    date: Date,
-    duration: number = this.options.minDuration
-  ) {
+    session?: mongodb.ClientSession
+  ): Promise<Resource<T> | null> {
+    const data = await this.mongoCollection.findOne(
+      { _id: new mongodb.ObjectID(id) },
+      { session }
+    );
+    return data && new Resource(data);
+  }
+
+  public async book(id: string, date: Date, duration: number, meta?: T) {
     const oid = new mongodb.ObjectID(id);
     const session = this.options.mongoClient.startSession();
     try {
       await session.withTransaction(async () => {
-        const data = await this.mongoCollection.findOne({ _id: oid });
-        if (!data) throw new Error("no such resource");
-        const resource = new Resource(data);
-        resource.book(date, duration);
+        const resource = await this.getResourceById(id, session);
+        if (!resource) throw new Error("no such resource");
+        resource.book(date, duration, meta);
+        if (this.beforeBookingUpdate) await this.beforeBookingUpdate();
         await this.mongoCollection.updateOne(
           { _id: oid },
-          { $set: resource },
+          { $set: resource.data },
           { session, upsert: true }
         );
       });
@@ -46,7 +60,7 @@ class ReservationService<T = undefined> {
     }
   }
 
-  private get mongoCollection(): mongodb.Collection<Data<T>> {
+  private get mongoCollection(): mongodb.Collection<BookingData<T>> {
     return this.options.mongoClient
       .db(this.options.dbName)
       .collection(this.options.collectionName);
