@@ -28,15 +28,22 @@ class ReservationService<T = undefined> {
     duration: number = this.options.minDuration
   ) {
     const oid = new mongodb.ObjectID(id);
-    const data = await this.mongoCollection.findOne({ _id: oid });
-    if (!data) throw new Error("no such resource");
-    const resource = new Resource(data);
-    resource.book(date, duration);
-    await this.mongoCollection.updateOne(
-      { _id: oid },
-      { $set: resource },
-      { upsert: true }
-    );
+    const session = this.options.mongoClient.startSession();
+    try {
+      await session.withTransaction(async () => {
+        const data = await this.mongoCollection.findOne({ _id: oid });
+        if (!data) throw new Error("no such resource");
+        const resource = new Resource(data);
+        resource.book(date, duration);
+        await this.mongoCollection.updateOne(
+          { _id: oid },
+          { $set: resource },
+          { session, upsert: true }
+        );
+      });
+    } finally {
+      await session.endSession();
+    }
   }
 
   private get mongoCollection(): mongodb.Collection<Data<T>> {
