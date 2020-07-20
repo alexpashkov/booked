@@ -1,5 +1,5 @@
 import * as mongodb from "mongodb";
-import Resource, { BookingData } from "../Resource/Resource";
+import Resource, { Data } from "../Resource/Resource";
 
 interface Options {
   readonly mongoClient: mongodb.MongoClient;
@@ -17,7 +17,7 @@ class ReservationService<T = undefined> {
 
   constructor(private readonly options: Options) {}
 
-  private get blankResourceData(): BookingData<T> {
+  private get blankResourceData(): Data<T> {
     return {
       bookings: [],
       minDuration: this.options.minDuration,
@@ -60,7 +60,7 @@ class ReservationService<T = undefined> {
     }
   }
 
-  private get mongoCollection(): mongodb.Collection<BookingData<T>> {
+  private get mongoCollection(): mongodb.Collection<Data<T>> {
     return this.options.mongoClient
       .db(this.options.dbName)
       .collection(this.options.collectionName);

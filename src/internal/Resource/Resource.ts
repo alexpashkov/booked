@@ -4,7 +4,7 @@ interface Booking<T = undefined> {
   meta?: T;
 }
 
-export interface BookingData<T> {
+export interface Data<T> {
   bookings: Booking<T>[];
   minDuration: number;
 }
@@ -25,7 +25,7 @@ export default class Resource<T> {
     return booking.date.getTime() + booking.duration > date.getTime();
   }
 
-  public constructor(public readonly data: BookingData<T>) {}
+  public constructor(public readonly data: Data<T>) {}
 
   /**
    *
