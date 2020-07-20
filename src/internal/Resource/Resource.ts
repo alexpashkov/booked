@@ -9,7 +9,7 @@ export interface Data<T> {
   minDuration: number;
 }
 
-export default class Resource<T> {
+export class Resource<T> {
   private static compareDates(a: Date, b: Date): number {
     return a > b ? -1 : 1;
   }

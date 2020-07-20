@@ -1,5 +1,5 @@
 import * as mongodb from "mongodb";
-import Resource, { Data } from "../Resource/Resource";
+import * as resource from "../Resource/Resource";
 
 interface Options {
   readonly mongoClient: mongodb.MongoClient;
@@ -17,7 +17,7 @@ class ReservationService<T = undefined> {
 
   constructor(private readonly options: Options) {}
 
-  private get blankResourceData(): Data<T> {
+  private get blankResourceData(): resource.Data<T> {
     return {
       bookings: [],
       minDuration: this.options.minDuration,
@@ -32,12 +32,12 @@ class ReservationService<T = undefined> {
   public async getResourceById(
     id: string,
     session?: mongodb.ClientSession
-  ): Promise<Resource<T> | null> {
+  ): Promise<resource.Resource<T> | null> {
     const data = await this.mongoCollection.findOne(
       { _id: new mongodb.ObjectID(id) },
       { session }
     );
-    return data && new Resource(data);
+    return data && new resource.Resource(data);
   }
 
   public async book(id: string, date: Date, duration: number, meta?: T) {
@@ -60,7 +60,7 @@ class ReservationService<T = undefined> {
     }
   }
 
-  private get mongoCollection(): mongodb.Collection<Data<T>> {
+  private get mongoCollection(): mongodb.Collection<resource.Data<T>> {
     return this.options.mongoClient
       .db(this.options.dbName)
       .collection(this.options.collectionName);
